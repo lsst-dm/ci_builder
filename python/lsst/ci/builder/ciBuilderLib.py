@@ -216,7 +216,7 @@ class CommandRunner:
 
     def _init_RunDir(self):
         self.RunDir = self.args.root
-        self.gitCmd = ("git", "-C", self.RunDir)
+        self.gitCmd = ("git", "-C", self.RunDir, "-c", "user.email='\\<\\>'", "-c", "user.name=ci_builder")
         if not os.path.exists(self.RunDir):
             os.mkdir(self.RunDir)
             self.RunDir = os.path.abspath(self.RunDir)
