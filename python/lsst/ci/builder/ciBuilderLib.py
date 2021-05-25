@@ -224,6 +224,16 @@ class CommandRunner:
             self._runAndTrap(('commit', "--allow-empty", '-m', 'initialize'))
             self._runAndTrap(('tag', '-a', 'init', '-m', 'initial tag'))
         else:
+            # Try to fetch the repo state, if this raises a command error, then
+            # the git filesystem was not properly initialized
+            try:
+                self.getRepoState()
+            except CommandError as err:
+                # The filesystem has no tags to describe, and was not
+                # initialized,
+                if "describe" in err.args[0]:
+                    self._runAndTrap(('commit', "--allow-empty", '-m', 'initialize'))
+                    self._runAndTrap(('tag', '-a', 'init', '-m', 'initial tag'))
             self.RunDir = os.path.abspath(self.RunDir)
 
     def getRepoState(self) -> BuildState:
