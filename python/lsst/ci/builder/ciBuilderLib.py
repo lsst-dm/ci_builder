@@ -216,7 +216,7 @@ class CommandRunner:
 
     def _init_RunDir(self):
         self.RunDir = self.args.root
-        self.gitCmd = ("git", "-C", self.RunDir)
+        self.gitCmd = ("git", "-C", self.RunDir, "-c", "user.email='\\<\\>'", "-c", "user.name=ci_builder")
         if not os.path.exists(self.RunDir):
             os.mkdir(self.RunDir)
             self.RunDir = os.path.abspath(self.RunDir)
@@ -224,16 +224,26 @@ class CommandRunner:
             self._runAndTrap(('commit', "--allow-empty", '-m', 'initialize'))
             self._runAndTrap(('tag', '-a', 'init', '-m', 'initial tag'))
         else:
+            # Try to fetch the repo state, if this raises a command error, then
+            # the git filesystem was not properly initialized
+            try:
+                self.getRepoState()
+            except CommandError as err:
+                # The filesystem has no tags to describe, and was not
+                # initialized,
+                if "describe" in err.args[0]:
+                    self._runAndTrap(('commit', "--allow-empty", '-m', 'initialize'))
+                    self._runAndTrap(('tag', '-a', 'init', '-m', 'initial tag'))
             self.RunDir = os.path.abspath(self.RunDir)
 
     def getRepoState(self) -> BuildState:
         """returns the current latest label and if the state is dirty
         """
         currentTagResult = self._runAndTrap(("describe", "--exact-match", "HEAD"),
-                                            "There was an issue is getting the current tag: {}")
+                                            "There was an issue getting the current tag: {}")
 
         currentState = self._runAndTrap(('status', '-s'),
-                                        "There was an issue is getting the current tag: {}")
+                                        "There was an issue getting the current tag: {}")
         return BuildState(currentTagResult.stdout.decode().replace('\n', ''), bool(currentState.stdout))
 
     def _getAllTags(self) -> Iterable[str]:
@@ -283,7 +293,7 @@ class CommandRunner:
 
     def _print_status(self):
         state = self.getRepoState()
-        print(f"The last command to complet is {state.current}")
+        print(f"The last command to complete is {state.current}")
         if state.dirty:
             print("The run directory is dirty, a command was run but did not complete successfully")
         sys.exit(0)
