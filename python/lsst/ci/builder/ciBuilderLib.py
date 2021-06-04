@@ -240,10 +240,10 @@ class CommandRunner:
         """returns the current latest label and if the state is dirty
         """
         currentTagResult = self._runAndTrap(("describe", "--exact-match", "HEAD"),
-                                            "There was an issue is getting the current tag: {}")
+                                            "There was an issue getting the current tag: {}")
 
         currentState = self._runAndTrap(('status', '-s'),
-                                        "There was an issue is getting the current tag: {}")
+                                        "There was an issue getting the current tag: {}")
         return BuildState(currentTagResult.stdout.decode().replace('\n', ''), bool(currentState.stdout))
 
     def _getAllTags(self) -> Iterable[str]:
@@ -293,7 +293,7 @@ class CommandRunner:
 
     def _print_status(self):
         state = self.getRepoState()
-        print(f"The last command to complet is {state.current}")
+        print(f"The last command to complete is {state.current}")
         if state.dirty:
             print("The run directory is dirty, a command was run but did not complete successfully")
         sys.exit(0)
