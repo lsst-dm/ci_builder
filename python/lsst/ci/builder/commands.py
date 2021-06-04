@@ -48,7 +48,7 @@ class WriteCuratedCalibrations(BaseCommand):
 
 
 class RegisterSkyMap(BaseCommand):
-    relativeConfigPath: str = os.path.join("config", "skympy.py")
+    relativeConfigPath: str = os.path.join("configs", "skymap.py")
 
     @classmethod
     def addArgs(cls, parser: ArgumentParser):
