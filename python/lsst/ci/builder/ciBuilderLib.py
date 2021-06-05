@@ -227,6 +227,9 @@ class CommandRunner:
             # Try to fetch the repo state, if this raises a command error, then
             # the git filesystem was not properly initialized
             try:
+                # init the git repo if it hasn't already (e.g. empty folder)
+                if not os.path.exists(os.path.join(self.RunDir, '.git')):
+                    self._runAndTrap(('init',))
                 self.getRepoState()
             except CommandError as err:
                 # The filesystem has no tags to describe, and was not
