@@ -277,6 +277,8 @@ class CommandRunner:
             sys.exit(1)
         else:
             self._runAndTrap(("reset", "--hard", target), "There was an issue resetting to desired tag: {}")
+            self._runAndTrap(('clean', '-dfx'),
+                             "There was an issue resetting to a desired tag: {}")
             tags = [command.git_tag for command in self.ordering]
             target_index = tags.index(target)
             if target_index + 1 <= len(tags):
@@ -417,6 +419,8 @@ class CommandRunner:
         if not args.allow_dirty:
             _log.debug(f"Reseting RunDir to previous state of {resetTarget}")
             self._runAndTrap(('reset', '--hard', resetTarget),
+                             "There was an issue resetting to a clean state")
+            self._runAndTrap(('clean', '-dfx'),
                              "There was an issue resetting to a clean state")
 
         # delete any tags past the one the first one that will be processed
