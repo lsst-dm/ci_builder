@@ -48,6 +48,8 @@ class WriteCuratedCalibrations(BaseCommand):
 
 
 class RegisterSkyMap(BaseCommand):
+    relativeConfigPath: str = os.path.join("configs", "skymap.py")
+
     @classmethod
     def addArgs(cls, parser: ArgumentParser):
         parser.add_argument("--skymap-config", dest="skymap_config", default="",
@@ -55,7 +57,7 @@ class RegisterSkyMap(BaseCommand):
 
     def run(self, currentState: BuildState):
         if not (config_file := self.arguments.skymap_config):
-            config_path = os.path.join(self.runner.pkgRoot, "configs", "skymap.py")
+            config_path = os.path.join(self.runner.pkgRoot, self.relativeConfigPath)
             if os.path.exists(config_path):
                 config_file = config_path
         registerSkymap.registerSkymap(self.runner.RunDir, None, config_file or None)

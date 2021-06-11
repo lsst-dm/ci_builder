@@ -123,11 +123,11 @@ class CommandRunner:
                                        "output will be <basename>-<sequence#>-<script>.pstats; "
                                        "(Note: this option is for profiling the scripts, while "
                                        "--profile is for scons)"),
-                                 nargs="?", const="profile", dest="enable_profile")
+                                 nargs="?", const="profile", dest="enable_profile", type=str)
         self.parser.add_argument("-j", dest="num_cores", help="Number of cores to use for commands that "
-                                 "support multiple cores", default=1)
+                                 "support multiple cores", default=1, type=int)
         self.parser.add_argument("--reset", dest="reset_target", help="Reset the RunDir to given commmand",
-                                 default="")
+                                 default="", type=str)
         self.addArgs()
         for regCommand in self.ordering:
             regCommand.command.addArgs(self.parser)
@@ -216,7 +216,7 @@ class CommandRunner:
 
     def _init_RunDir(self):
         self.RunDir = self.args.root
-        self.gitCmd = ("git", "-C", self.RunDir)
+        self.gitCmd = ("git", "-C", self.RunDir, "-c", "user.email='\\<\\>'", "-c", "user.name=ci_builder")
         if not os.path.exists(self.RunDir):
             os.mkdir(self.RunDir)
             self.RunDir = os.path.abspath(self.RunDir)
@@ -224,16 +224,29 @@ class CommandRunner:
             self._runAndTrap(('commit', "--allow-empty", '-m', 'initialize'))
             self._runAndTrap(('tag', '-a', 'init', '-m', 'initial tag'))
         else:
+            # Try to fetch the repo state, if this raises a command error, then
+            # the git filesystem was not properly initialized
+            try:
+                # init the git repo if it hasn't already (e.g. empty folder)
+                if not os.path.exists(os.path.join(self.RunDir, '.git')):
+                    self._runAndTrap(('init',))
+                self.getRepoState()
+            except CommandError as err:
+                # The filesystem has no tags to describe, and was not
+                # initialized,
+                if "describe" in err.args[0]:
+                    self._runAndTrap(('commit', "--allow-empty", '-m', 'initialize'))
+                    self._runAndTrap(('tag', '-a', 'init', '-m', 'initial tag'))
             self.RunDir = os.path.abspath(self.RunDir)
 
     def getRepoState(self) -> BuildState:
         """returns the current latest label and if the state is dirty
         """
         currentTagResult = self._runAndTrap(("describe", "--exact-match", "HEAD"),
-                                            "There was an issue is getting the current tag: {}")
+                                            "There was an issue getting the current tag: {}")
 
         currentState = self._runAndTrap(('status', '-s'),
-                                        "There was an issue is getting the current tag: {}")
+                                        "There was an issue getting the current tag: {}")
         return BuildState(currentTagResult.stdout.decode().replace('\n', ''), bool(currentState.stdout))
 
     def _getAllTags(self) -> Iterable[str]:
@@ -264,6 +277,8 @@ class CommandRunner:
             sys.exit(1)
         else:
             self._runAndTrap(("reset", "--hard", target), "There was an issue resetting to desired tag: {}")
+            self._runAndTrap(('clean', '-dfx'),
+                             "There was an issue resetting to a desired tag: {}")
             tags = [command.git_tag for command in self.ordering]
             target_index = tags.index(target)
             if target_index + 1 <= len(tags):
@@ -283,7 +298,7 @@ class CommandRunner:
 
     def _print_status(self):
         state = self.getRepoState()
-        print(f"The last command to complet is {state.current}")
+        print(f"The last command to complete is {state.current}")
         if state.dirty:
             print("The run directory is dirty, a command was run but did not complete successfully")
         sys.exit(0)
@@ -404,6 +419,8 @@ class CommandRunner:
         if not args.allow_dirty:
             _log.debug(f"Reseting RunDir to previous state of {resetTarget}")
             self._runAndTrap(('reset', '--hard', resetTarget),
+                             "There was an issue resetting to a clean state")
+            self._runAndTrap(('clean', '-dfx'),
                              "There was an issue resetting to a clean state")
 
         # delete any tags past the one the first one that will be processed
