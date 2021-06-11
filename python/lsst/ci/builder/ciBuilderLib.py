@@ -123,11 +123,11 @@ class CommandRunner:
                                        "output will be <basename>-<sequence#>-<script>.pstats; "
                                        "(Note: this option is for profiling the scripts, while "
                                        "--profile is for scons)"),
-                                 nargs="?", const="profile", dest="enable_profile")
+                                 nargs="?", const="profile", dest="enable_profile", type=str)
         self.parser.add_argument("-j", dest="num_cores", help="Number of cores to use for commands that "
-                                 "support multiple cores", default=1)
+                                 "support multiple cores", default=1, type=int)
         self.parser.add_argument("--reset", dest="reset_target", help="Reset the RunDir to given commmand",
-                                 default="")
+                                 default="", type=str)
         self.addArgs()
         for regCommand in self.ordering:
             regCommand.command.addArgs(self.parser)
