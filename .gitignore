@@ -10,7 +10,7 @@ config.log
 
 # Built by sconsUtils
 version.py
-bin/
+bin/*.py
 
 # Pytest
 tests/.tests
@@ -18,3 +18,8 @@ pytest_session.txt
 .cache/
 .pytest_cache
 .coverage
+
+# IDEs, etc.
+.idea/
+.vscode/
+
