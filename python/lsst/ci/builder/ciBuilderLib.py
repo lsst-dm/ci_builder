@@ -14,10 +14,11 @@ import sys
 from typing import Iterable, Optional, Tuple, Type
 
 from lsst.log import Log
-from lsst.sconsUtils.utils import libraryLoaderEnvironment
 
 
 _log: Log = Log.getLogger("lsst.ci.builder.CommandRunner")
+
+safe_python = os.path.join(os.environ["CI_BUILDER_DIR"], "bin", "sip_safe_python.sh")
 
 
 class CommandError(Exception):
@@ -196,7 +197,8 @@ class CommandRunner:
         """
         if directory is None:
             directory = "bin"
-        cmds = [libraryLoaderEnvironment(), "python", self._getProfiling(script),
+        cmds = [safe_python,
+                self._getProfiling(script),
                 os.path.join(os.environ[package], directory, script)]
         cmds.extend(args)
         return [c for c in cmds if c]
