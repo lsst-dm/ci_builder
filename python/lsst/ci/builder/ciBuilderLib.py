@@ -207,7 +207,7 @@ class CommandRunner:
         """Run a git command involved with recording or restoring the
         state of the RunDir.
         """
-        _log.debug(f"Running command {command}")
+        _log.debug(f"Running git command {command}")
         commandResult = subprocess.run(self.gitCmd+command, capture_output=True)
         if (commandResult.returncode != 0
                 and "nothing to commit, working tree clean" not in commandResult.stdout.decode()):
@@ -438,7 +438,7 @@ class CommandRunner:
                 # Reset to the run directory in case a command changed
                 # locations
                 os.chdir(self.RunDir)
-                _log.info(f"Running command: {regCommand.git_tag}")
+                _log.info(f"Running CI command: {regCommand.git_tag}")
                 cmd = regCommand.command(args, self)
                 cmd.run(self.getRepoState())
             except CommandError:
@@ -479,7 +479,7 @@ class CommandRunner:
 class BaseCommand(ABC):
     """This is an abstract base class used to specify the interface that
     runnable commands must adhere to. Subclasses must override a run method.
-    This method should run any commands that modify the state a managed
+    This method should run any commands that modify the state of a managed
     repository.
 
     Commands by themselves are not associate with any particular
