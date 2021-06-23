@@ -22,7 +22,6 @@ class CreateButler(BaseCommand):
     def run(self, currentState: BuildState):
         conf = self.arguments.butler_conf
 
-
         createRepo(self.runner.RunDir, seed_config=conf or None, override=self.arguments.conf_override)
 
 
