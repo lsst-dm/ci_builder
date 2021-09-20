@@ -109,11 +109,11 @@ class TestRunner(BaseCommand):
 
     @property
     def executable(self) -> str:
-        return os.path.join(self.runner.pkgRoot, "bin", "sip_safe_python.sh")
+        return os.path.join(os.environ["CI_BUILDER_DIR"], "bin", "sip_safe_python.sh")
 
     def run(self, currentState: BuildState):
         testLoc = self.testLocation
         for file in os.listdir(testLoc):
             test = os.path.join(testLoc, file)
         if test.endswith(".py"):
-            subprocess.run((self.executable, test))
+            subprocess.run((self.executable, test), check=True)
