@@ -84,8 +84,7 @@ class DefineVisits(BaseCommand):
     """
 
     def run(self, currentState: BuildState):
-        defineVisits(self.runner.RunDir, None, self.collectionsName, self.instrumentName,
-                     processes=int(self.arguments.num_cores))
+        defineVisits(self.runner.RunDir, None, self.collectionsName, self.instrumentName)
 
 
 class ButlerImport(BaseCommand):
