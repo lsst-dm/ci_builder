@@ -5,7 +5,8 @@ import subprocess
 from typing import Iterable, Union
 
 from lsst.daf.butler.script import createRepo, butlerImport
-from lsst.obs.base.script import (registerInstrument, writeCuratedCalibrations, ingestRaws, defineVisits)
+from lsst.obs.base.script import (writeCuratedCalibrations, ingestRaws, defineVisits)
+from lsst.pipe.base.script import register_instrument
 from lsst.pipe.tasks.script import registerSkymap
 
 from lsst.ci.builder import BaseCommand, BuildState
@@ -34,7 +35,7 @@ class RegisterInstrument(BaseCommand):
     def run(self, currentState: BuildState):
         if isinstance(instrument := self.instrumentName, str):
             instrument = (instrument,)
-        registerInstrument(self.runner.RunDir, instrument)
+        register_instrument(self.runner.RunDir, instrument)
 
 
 class WriteCuratedCalibrations(BaseCommand):
