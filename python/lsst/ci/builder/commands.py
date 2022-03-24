@@ -115,5 +115,5 @@ class TestRunner(BaseCommand):
         testLoc = self.testLocation
         for file in os.listdir(testLoc):
             test = os.path.join(testLoc, file)
-        if test.endswith(".py"):
-            subprocess.run((self.executable, test), check=True)
+            if test.endswith(".py"):
+                subprocess.run((self.executable, test), check=True)
