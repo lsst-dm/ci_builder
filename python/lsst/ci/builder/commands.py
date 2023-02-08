@@ -71,8 +71,7 @@ class IngestRaws(BaseCommand):
     """
 
     def run(self, currentState: BuildState):
-        ingestRaws(self.runner.RunDir, (self.rawLocation,), self.FITS_RE, None,
-                   processes=int(self.arguments.num_cores))
+        ingestRaws(self.runner.RunDir, (self.rawLocation,), self.FITS_RE, None)
 
 
 class DefineVisits(BaseCommand):
