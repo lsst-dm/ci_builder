@@ -96,7 +96,13 @@ class ButlerImport(BaseCommand):
     """
 
     def run(self, currentState: BuildState):
-        butlerImport(self.runner.RunDir, self.dataLocation, self.importFileLocation, 'auto', None, False)
+        butlerImport(
+            self.runner.RunDir,
+            directory=self.dataLocation,
+            export_file=self.importFileLocation,
+            transfer='auto',
+            skip_dimensions=None,
+        )
 
 
 class TestRunner(BaseCommand):
