@@ -3,7 +3,6 @@
 # - Common third-party packages can be assumed to be recursively included by
 #   the "base" package.
 setupRequired(base)
-setupRequired(log)
 setupRequired(daf_butler)
 setupRequired(obs_base)
 setupRequired(pipe_tasks)
