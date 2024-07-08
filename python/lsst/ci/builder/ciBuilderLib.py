@@ -8,15 +8,13 @@ from argparse import ArgumentParser, Namespace
 from bisect import bisect_left
 from dataclasses import dataclass
 from functools import total_ordering
+import logging
 import os
 import subprocess
 import sys
 from typing import Iterable, Optional, Tuple, Type
 
-from lsst.log import Log
-
-
-_log: Log = Log.getLogger("lsst.ci.builder.CommandRunner")
+_log = logging.getLogger("lsst.ci.builder.CommandRunner")
 
 safe_python = os.path.join(os.environ["CI_BUILDER_DIR"], "bin", "sip_safe_python.sh")
 
