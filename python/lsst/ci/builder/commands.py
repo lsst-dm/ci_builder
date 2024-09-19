@@ -45,7 +45,9 @@ class WriteCuratedCalibrations(BaseCommand):
     """
 
     def run(self, currentState: BuildState):
-        writeCuratedCalibrations(self.runner.RunDir, self.instrumentName, None, tuple())
+        writeCuratedCalibrations(
+            self.runner.RunDir, self.instrumentName, f"{self.instrumentName}/calib", tuple()
+        )
 
 
 class RegisterSkyMap(BaseCommand):
