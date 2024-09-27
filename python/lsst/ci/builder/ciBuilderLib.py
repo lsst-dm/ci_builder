@@ -12,6 +12,7 @@ import logging
 import os
 import subprocess
 import sys
+import shutil
 from typing import Iterable, Optional, Tuple, Type
 
 _log = logging.getLogger("lsst.ci.builder.CommandRunner")
@@ -215,7 +216,6 @@ class CommandRunner:
         return commandResult
 
     def _init_RunDir(self):
-        self.RunDir = self.args.root
         self.gitCmd = ("git", "-C", self.RunDir, "-c", "user.email='\\<\\>'", "-c", "user.name=ci_builder")
         if not os.path.exists(self.RunDir):
             os.mkdir(self.RunDir)
@@ -258,12 +258,19 @@ class CommandRunner:
 
     def _clean(self):
         """Resets the RunDir to a state before any commands were executed
+
+        By default this just removes the RunDir from the filesystem but the
+        method serves as a hook such that any children can specify alternative
+        behavior.
         """
-        self._runAndTrap(("reset", "--hard", "init"), "There was an issue cleaning the state: {}")
-        allTags = set(self._getAllTags())
-        allTags.remove("init")
-        self._runAndTrap(("tag", "-d") + tuple(allTags), "There was an issue cleaning the state: {}")
-        sys.exit(0)
+        if os.path.isdir(self.RunDir):
+            try:
+                _log.info(f"Removing {self.RunDir}")
+                shutil.rmtree(self.RunDir)
+            except Exception as exc:
+                print(f"There was a problem removing the RunDir:\n {exc}")
+                sys.exit(1)
+            sys.exit(0)
 
     def _reset(self):
         """Resets a RunDir to a given state
@@ -385,6 +392,13 @@ class CommandRunner:
             args = arguments
 
         self.args = args
+        # Record RunDir as early as possible to allow anything below to use the
+        # reference
+        self.RunDir = self.args.root
+
+        # Clean up by removing existing RunDir
+        if args.clean:
+            self._clean()
 
         # list all commands (exits on completion)
         if args.list:
@@ -398,11 +412,6 @@ class CommandRunner:
         # this command to work after RunDir has been init
         if args.status:
             self._print_status()
-
-        # Run clean if requested (exits on completion) must be run after
-        # RunDir init
-        if args.clean:
-            self._clean()
 
         # Reset RunDir to given command (exits on completion)
         if args.reset_target != "":
