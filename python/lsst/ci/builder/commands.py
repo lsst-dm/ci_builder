@@ -19,11 +19,17 @@ class CreateButler(BaseCommand):
                             help="Path to an external Butler config used to create a data repository.")
         parser.add_argument("--config-override", action="store_true", dest="conf_override",
                             help="Override the default config root with the given repo-root.")
+        parser.add_argument("--git-ignore-filetypes", dest="git_ignores", nargs="+",
+                            default=["*.fits", "*.parq", "*.png"],
+                            help="List of filetypes to add to .gitignore, e.g. '*.fits'")
 
     def run(self, currentState: BuildState):
         conf = self.arguments.butler_conf
 
         createRepo(self.runner.RunDir, seed_config=conf or None, override=self.arguments.conf_override)
+        if self.arguments.git_ignores:
+            with open(f"{self.runner.RunDir}/.gitignore", "w") as f:
+                f.writelines([f"{line}\n" for line in self.arguments.git_ignores])
 
 
 class RegisterInstrument(BaseCommand):
