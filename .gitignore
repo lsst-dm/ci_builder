@@ -11,6 +11,7 @@ config.log
 # Built by sconsUtils
 version.py
 bin/*.py
+python/lsst_ci_builder.dist-info/
 
 # Pytest
 tests/.tests
