@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from functools import total_ordering
 import logging
 import os
+import shutil
 import subprocess
 import sys
 from typing import Iterable, Optional, Tuple, Type
@@ -127,6 +128,9 @@ class CommandRunner:
                                  "support multiple cores", default=1, type=int)
         self.parser.add_argument("--reset", dest="reset_target", help="Reset the RunDir to given commmand",
                                  default="", type=str)
+        self.parser.add_argument("--reset-init",
+                                 help="Reset the RunDir to its initial state",
+                                 action="store_true")
         self.addArgs()
         for regCommand in self.ordering:
             regCommand.command.addArgs(self.parser)
@@ -257,6 +261,18 @@ class CommandRunner:
         return allTagsResult.stdout.decode().split('\n')[:-1]
 
     def _clean(self):
+        """Removes the entire run directory.
+        """
+        if os.path.exists(self.args.root):
+            if os.path.isdir(self.args.root):
+                shutil.rmtree(self.args.root)
+            else:
+                raise ValueError(
+                    f"root={self.args.root} exists but is not a directory"
+                )
+        sys.exit(0)
+
+    def _reset_init(self):
         """Resets the RunDir to a state before any commands were executed
         """
         self._runAndTrap(("reset", "--hard", "init"), "There was an issue cleaning the state: {}")
@@ -390,6 +406,11 @@ class CommandRunner:
         if args.list:
             self._list_commands()
 
+        # Run clean if requested (exits on completion) must be run after
+        # RunDir init
+        if args.clean:
+            self._clean()
+
         # initialize the run dir
         self._init_RunDir()
 
@@ -399,10 +420,9 @@ class CommandRunner:
         if args.status:
             self._print_status()
 
-        # Run clean if requested (exits on completion) must be run after
-        # RunDir init
-        if args.clean:
-            self._clean()
+        # Reset RunDir to its initial state (exits on completion)
+        if args.reset_init:
+            self._reset_init()
 
         # Reset RunDir to given command (exits on completion)
         if args.reset_target != "":
